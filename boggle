@@ -17,8 +17,8 @@ BIG = [
     "FIPRSY", "GORRVW", "HIPRRY", "NOOTUW", "OOOTTU"
 ]
 
-# UPDATE TO YOUR PATH
-GAME_PATH = "/home/kadeag/.local/bin/boggle"
+# UPDATE TO YOUR PATH - execv doesn't check PATH
+GAME_PATH = "PATH/TO/BOGGLE/FILE"
 
 GAME_TIME = 180
 
