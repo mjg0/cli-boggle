@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import random, time, os, sys, signal
+import random, time, os, sys, signal, shutil
 
 CLASSIC = [
     "RIFOBX", "IFEHEY", "DENOWS", "UTOKND",
@@ -17,8 +17,7 @@ BIG = [
     "FIPRSY", "GORRVW", "HIPRRY", "NOOTUW", "OOOTTU"
 ]
 
-# UPDATE TO YOUR PATH - execv doesn't check PATH
-GAME_PATH = "PATH/TO/BOGGLE/FILE"
+GAME_PATH = shutil.which("boggle")
 
 GAME_TIME = 180
 
