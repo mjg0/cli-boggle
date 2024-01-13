@@ -1,34 +1,81 @@
 #!/usr/bin/env python3
 
-import random, threading, time
+import random, time, os, sys, signal
 
-def generate_boggle_board(dice):
+CLASSIC = [
+    "RIFOBX", "IFEHEY", "DENOWS", "UTOKND",
+    "HMSRAO", "LUPETS", "ACITOA", "YLGKUE",
+    "QBMJOA", "EHISPN", "VETIGN", "BALIYT",
+    "EZAVND", "RALESC", "UWILRG", "PACEMD"
+]
+
+BIG = [
+    "AAAFRS", "AAEEEE", "AAFIRS", "ADENNN", "AEEEEM",
+    "AEEGMU", "AEGMNN", "AFIRSY", "BJKQXZ", "CCNSTW",
+    "CEIILT", "CEILPT", "CEIPST", "DHHNOT", "DHHLOR",
+    "DHLNOR", "DDLNOR", "EIIITT", "EMOTTT", "ENSSSU",
+    "FIPRSY", "GORRVW", "HIPRRY", "NOOTUW", "OOOTTU"
+]
+
+# UPDATE TO YOUR PATH
+GAME_PATH = "/home/kadeag/.local/bin/boggle"
+
+GAME_TIME = 180
+
+def generate_boggle_board(dice, size):
     random.shuffle(dice)
     board = [random.choice(die) for die in dice]
-    return [board[i:i+4] for i in range(0, 16, 4)]
+    return [board[i:i+size] for i in range(0, size * size, size)]
 
 def print_board(board):
+    print("\n")
     for row in board:
         formatted_row = ['Qu' if letter == 'Q' else letter + ' ' for letter in row]
         print(' '.join(formatted_row))
 
 def start_timer(duration):
-    time.sleep(duration)
-    print("\033[91mTIME UP\033[0m")  # 91 is the ANSI code for bright red
-
+    try:
+        time.sleep(duration)
+        print("\033[91mTIME UP\033[0m")  # 91 is the ANSI code for bright red
+        print('\a') # alert sound
+    except BaseException:
+        exit()
+        
 def main():
-    dice = [
-        "AAEEGN", "ELRTTY", "AOOTTW", "ABBJOO",
-        "EHRTVW", "CIMOTU", "DISTTY", "EIOSST",
-        "DELRVY", "ACHOPS", "HIMNQU", "EEINSU",
-        "EEGHNW", "AFFKPS", "HLNNRZ", "DEILRX"
-    ]
+    try:
+        user_in = ""
+        if len(sys.argv) < 2 or sys.argv[1] == "r":
+            user_in = input("Classic [c] or Big [b] Boggle: ").lower()
+        else:
+            user_in = sys.argv[1]
+        size = 4
+        dice = []
+        if str(user_in) == "c":
+            size = 4
+            dice = CLASSIC
+        elif str(user_in) == "b":
+            size = 5
+            dice = BIG
 
-    board = generate_boggle_board(dice)
-    print_board(board)
+        board = generate_boggle_board(dice, size)
+        print_board(board)
 
-    timer_thread = threading.Thread(target=start_timer, args=(180,))
-    timer_thread.start()
+        pid = os.fork()
+        if pid > 0: # parent process
+            user_in = str(input().lower())
+            if user_in == "b" or user_in == "c" or user_in == "r":
+                os.kill(pid, signal.SIGINT)
+                os.execv(GAME_PATH, ["boggle", user_in])
+            else:
+                os.kill(pid, signal.SIGINT) # kill timer
+                print("Quitting")
+                exit()
+        else: # child
+            start_timer(GAME_TIME)
+
+    except KeyboardInterrupt:
+        print("\nQuitting!")
+        exit()
 
 if __name__ == "__main__":
     main()
